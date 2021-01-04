@@ -26,6 +26,22 @@ class GameModel(db.Model):
         self.home_team_score = home_team_score
         self.away_team_score = away_team_score
 
+    def get_description(self):
+        desc = ''
+        if (self.game_status == 'pending'):
+            desc = desc + 'Game in progress. '
+            if (self.home_team_score > self.away_team_score):
+                desc = desc + f'{self.home_team} is winning against {self.away_team}, {self.home_team_score} to {self.away_team_score}.'
+            else:
+                desc = desc + f'{self.away_team} is winning against {self.home_team}, {self.away_team_score} to {self.home_team_score}.'
+        else:
+            desc = desc + 'Game complete. '
+            if (self.home_team_score > self.away_team_score):
+                desc = desc + f'{self.home_team} beat {self.away_team}, {self.home_team_score} to {self.away_team_score}.'
+            else:
+                desc = desc + f'{self.away_team} beat {self.home_team}, {self.away_team_score} to {self.home_team_score}.'
+        return desc
+
     def toJSON(self):
         return {
             'type': 'game',
@@ -35,7 +51,8 @@ class GameModel(db.Model):
             'game_status': self.game_status,
             'winning_team': self.winning_team,
             'home_team_score': self.home_team_score,
-            'away_team_score': self.away_team_score
+            'away_team_score': self.away_team_score,
+            'desc': self.get_description()
         }
 
 class DriveModel(db.Model):
@@ -62,6 +79,9 @@ class DriveModel(db.Model):
         self.drive_total_time_sec = drive_total_time_sec
         self.drive_index = drive_index
 
+    def get_description(self):
+        return f'Drive complete for {self.team_name}. The drive ended in a {self.drive_result} and took {self.drive_total_time_sec} seconds. '
+
     def toJSON(self):
         return {
             'type': 'drive',
@@ -71,7 +91,8 @@ class DriveModel(db.Model):
             'drive_result': self.drive_result,
             'points_gained': self.points_gained,
             'drive_total_time_sec': self.drive_total_time_sec,
-            'drive_index': self.drive_index
+            'drive_index': self.drive_index,
+            'desc': self.get_description()
         }
 
 class SeriesModel(db.Model):
@@ -99,6 +120,21 @@ class SeriesModel(db.Model):
         self.series_result = series_result
         self.series_time_taken_sec = series_time_taken_sec
 
+    def get_description(self):
+        desc = ''
+        series_yard_description = ''
+        series_result_formatted = self.series_result.replace('_',' ')
+
+        if self.series_end_line < 50:
+            series_yard_description = series_yard_description + self.team_name + ' ' + str(self.series_end_line)
+            desc = f'Series complete for {self.team_name}. The series resulted in a {series_result_formatted}, and ended on the {series_yard_description} yard line. '
+        elif self.series_end_line >= 100:
+            desc = f'Series complete for {self.team_name}. The series resulted in a touchdown.'
+        elif self.series_end_line > 50:
+            series_yard_description = series_yard_description + 'opposition ' + str(100 - self.series_end_line)
+            desc = f'Series complete for {self.team_name}. The series resulted in a {series_result_formatted}, and ended on the {series_yard_description} yard line. '
+        return desc
+
     def toJSON(self):
         return {
             'type':'series',
@@ -109,8 +145,16 @@ class SeriesModel(db.Model):
             'team_name': self.team_name,
             'series_end_line': self.series_end_line,
             'series_result': self.series_result,
-            'series_time_taken_sec': self.series_time_taken_sec
+            'series_time_taken_sec': self.series_time_taken_sec,
+            'desc': self.get_description()
         }
+
+down_number_to_description = {
+    1: 'first',
+    2: 'second',
+    3: 'third',
+    4: 'fourth'
+}
 
 class PlayModel(db.Model):
     __tablename__ = 'plays'
@@ -146,6 +190,21 @@ class PlayModel(db.Model):
         self.punter = punter
         self.yards_gained = yards_gained
 
+    def get_description(self):
+        desc = ''
+        down_description = down_number_to_description[self.down]
+        if self.play_type == 'type_pass':
+            if self.yards_gained > 0:
+                desc = f'On {down_description} down, {self.passer} pass complete to {self.receiver} for {self.yards_gained} yards. '
+            else:
+                desc = f'On {down_description} down, {self.passer} pass incomplete to {self.receiver}. '
+        elif self.play_type == 'type_run':
+            if self.yards_gained > 0:
+                desc = f'On {down_description} down, {self.rusher} rushes for {self.yards_gained} yards. '
+            else:
+                desc = f'On {down_description} down, {self.rusher} rushes for no gain. '
+        return desc
+
     def toJSON(self):
         return {
             'type': 'play',
@@ -162,7 +221,8 @@ class PlayModel(db.Model):
             'receiver': self.receiver,
             'kicker': self.kicker,
             'punter': self.punter,
-            'yards_gained': self.yards_gained
+            'yards_gained': self.yards_gained,
+            'desc': self.get_description()
         }
 
 

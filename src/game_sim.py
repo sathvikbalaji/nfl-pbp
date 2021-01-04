@@ -137,8 +137,13 @@ def series_sim(team_name, starting_pos, series_index, game_id, drive_id):
         play_index = play_index + 1
         if series_yard_line >= starting_pos + 10:
             break
-    series_result = 'first_down' if series_yard_line >= starting_pos + 10 else 'turnover'        
-    
+    series_result = '' 
+    if series_yard_line >= 100:
+        series_result = 'touchdown'
+    elif series_yard_line >= starting_pos + 10:
+        series_result = 'first_down'
+    else:
+        series_result = 'turnover'    
     new_series_model.series_end_line = series_yard_line
     new_series_model.series_result = series_result
     new_series_model.series_time_taken_sec = series_time_taken
@@ -146,7 +151,7 @@ def series_sim(team_name, starting_pos, series_index, game_id, drive_id):
 
     return {
         'series_end_line': series_yard_line,
-        'series_result': series_result,
+        'series_result': series_result, 
         'series_time_taken_sec': series_time_taken
     }  
 
@@ -178,7 +183,8 @@ def drive_sim(team_name, starting_pos, game_id, drive_index):
     return {
         'drive_result': drive_result,
         'points_gained': points_gained,
-        'drive_total_time_sec': drive_total_time_sec 
+        'drive_total_time_sec': drive_total_time_sec,
+        'drive_end_line': None if drive_result == 'touchdown' else drive_yard_line  
     }
 
 def game_sim(home_team, away_team):
@@ -201,6 +207,7 @@ def game_sim(home_team, away_team):
         else:
             away_team_points += drive_simulation['points_gained']
             pos_team = home_team
+        starting_field_position = 25 if drive_simulation['drive_end_line'] is None else (100 - drive_simulation['drive_end_line'])
         new_game_model.home_team_score = home_team_points
         new_game_model.away_team_score = away_team_points
         db.session.commit()

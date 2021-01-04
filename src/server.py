@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 
 from game_sim import game_sim
 from models import db
@@ -16,4 +16,7 @@ def create_game():
 
 @app.route('/game/<game_id>', methods=['GET'])
 def get_game(game_id):
-	return get_game_information(game_id)
+	game_data = get_game_information(game_id)
+	print(game_data)
+	return render_template('game_view.html', game=game_data['game_results'])
+	#return get_game_information(game_id)
