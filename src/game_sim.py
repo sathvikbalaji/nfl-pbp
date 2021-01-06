@@ -2,7 +2,8 @@ import random
 import joblib
 import pandas as pd
 
-from models import db, GameModel, DriveModel, SeriesModel, PlayModel
+from core import db
+from models import GameModel, DriveModel, SeriesModel, PlayModel
 from helpers import random_eight_character_id
 
 model_play_alt = joblib.load('model_play_alt.joblib')
@@ -187,11 +188,11 @@ def drive_sim(team_name, starting_pos, game_id, drive_index):
         'drive_end_line': None if drive_result == 'touchdown' else drive_yard_line  
     }
 
-def game_sim(home_team, away_team):
-    new_game_model = GameModel(id=random_eight_character_id(), home_team=home_team, away_team=away_team, game_status='pending')
-    db.session.add(new_game_model)
-    db.session.commit()
-
+def game_sim(game_id):
+    game = GameModel.query.filter_by(id=game_id).first()
+    home_team = game.home_team
+    away_team = game.away_team
+    print(home_team, away_team)
     starting_field_position = 25
     home_team_points = 0
     away_team_points = 0
@@ -199,7 +200,7 @@ def game_sim(home_team, away_team):
     pos_team = home_team
     drive_index = 0
     while total_game_time_sec <= 60*60:
-        drive_simulation = drive_sim(pos_team, starting_field_position, new_game_model.id, drive_index)
+        drive_simulation = drive_sim(pos_team, starting_field_position, game.id, drive_index)
         print(pos_team, drive_simulation)
         if pos_team == home_team:
             home_team_points += drive_simulation['points_gained']
@@ -208,20 +209,20 @@ def game_sim(home_team, away_team):
             away_team_points += drive_simulation['points_gained']
             pos_team = home_team
         starting_field_position = 25 if drive_simulation['drive_end_line'] is None else (100 - drive_simulation['drive_end_line'])
-        new_game_model.home_team_score = home_team_points
-        new_game_model.away_team_score = away_team_points
+        game.home_team_score = home_team_points
+        game.away_team_score = away_team_points
         db.session.commit()
 
         total_game_time_sec += drive_simulation['drive_total_time_sec']
         drive_index = drive_index + 1
     
     winning_team = home_team if home_team_points > away_team_points else away_team
-    new_game_model.winning_team = winning_team
-    new_game_model.game_status = 'complete'
+    game.winning_team = winning_team
+    game.game_status = 'complete'
     db.session.commit()
 
     return {
-        'game_id': new_game_model.id,
+        'game_id': game.id,
         'home_team_points': home_team_points,
         'away_team_points': away_team_points,
         'winning_team': winning_team

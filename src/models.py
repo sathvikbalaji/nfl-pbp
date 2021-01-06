@@ -1,6 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from core import db
 
 class GameModel(db.Model):
     __tablename__ = 'games'
@@ -80,6 +78,8 @@ class DriveModel(db.Model):
         self.drive_index = drive_index
 
     def get_description(self):
+        if (self.drive_result is None):
+            return 'Drive in progress.'
         return f'Drive complete for {self.team_name}. The drive ended in a {self.drive_result} and took {self.drive_total_time_sec} seconds. '
 
     def toJSON(self):
@@ -122,8 +122,10 @@ class SeriesModel(db.Model):
 
     def get_description(self):
         desc = ''
+        if self.series_result is None:
+            return 'Series in progress.'
         series_yard_description = ''
-        series_result_formatted = self.series_result.replace('_',' ')
+        series_result_formatted = self.series_result.replace('_',' ') 
 
         if self.series_end_line < 50:
             series_yard_description = series_yard_description + self.team_name + ' ' + str(self.series_end_line)
@@ -133,6 +135,8 @@ class SeriesModel(db.Model):
         elif self.series_end_line > 50:
             series_yard_description = series_yard_description + 'opposition ' + str(100 - self.series_end_line)
             desc = f'Series complete for {self.team_name}. The series resulted in a {series_result_formatted}, and ended on the {series_yard_description} yard line. '
+        else:
+            desc = f'Series complete for {self.team_name}. The series resulted in a {series_result_formatted}, and ended on the 50 yard line. '
         return desc
 
     def toJSON(self):

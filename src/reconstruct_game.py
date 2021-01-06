@@ -18,9 +18,9 @@ def get_game_information(game_id):
 			game_data.extend([f'[{home_team} {home_team_score} - {away_team_score} {away_team}] ' +  play.get_description() for play in all_plays])
 			game_data.append(f'[{home_team} {home_team_score} - {away_team_score} {away_team}] ' + series.get_description())
 		if drive.team_name == home_team:
-			home_team_score += drive.points_gained
+			home_team_score += (drive.points_gained or 0)
 		else:
-			away_team_score += drive.points_gained
+			away_team_score += (drive.points_gained or 0)
 		game_data.append(f'[{home_team} {home_team_score} - {away_team_score} {away_team}] ' + drive.get_description())
 	game_data.append(f'[{home_team} {home_team_score} - {away_team_score} {away_team}] ' + game.get_description())
 		
