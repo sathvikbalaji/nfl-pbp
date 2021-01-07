@@ -22,5 +22,11 @@ def create_game():
 @app.route('/game/<game_id>', methods=['GET'])
 def get_game(game_id):
 	game_data = get_game_information(game_id)
+	if game_data is None:
+		return render_template('missing_game.html')
 	return render_template('game_view.html', game=game_data['game_results'])
 	#return get_game_information(game_id)
+
+@app.route('/', methods=['GET'])
+def home():
+	return render_template('home.html')

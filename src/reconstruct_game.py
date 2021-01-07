@@ -6,6 +6,8 @@ def get_game_information(game_id):
 	away_team_score = 0
 
 	game = GameModel.query.filter_by(id=game_id).first()
+	if game is None:
+		return None
 	home_team = game.home_team
 	away_team = game.away_team
 
