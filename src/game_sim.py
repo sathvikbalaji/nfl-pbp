@@ -2,18 +2,22 @@ import random
 import joblib
 import pandas as pd
 
-from core import db
+from core import db, app_environment
 from models import GameModel, DriveModel, SeriesModel, PlayModel
 from helpers import random_eight_character_id
 
-model_play_alt = joblib.load('./model_play_alt.joblib')
-model_pass = joblib.load('./model_pass.joblib')
-model_rush = joblib.load('./model_rush.joblib')
-model_kick = joblib.load('./model_kick.joblib')
-model_punt = joblib.load('./model_punt.joblib')
-y_play_alt = joblib.load('./y_play_alt.joblib')
-x_pass = joblib.load('./x_pass.joblib')
-x_rush = joblib.load('./x_rush.joblib')
+path = ''
+if (app_environment == 'heroku'):
+    path = '/app/src/'
+
+model_play_alt = joblib.load(path + 'model_play_alt.joblib')
+model_pass = joblib.load(path + 'model_pass.joblib')
+model_rush = joblib.load(path + 'model_rush.joblib')
+model_kick = joblib.load(path + 'model_kick.joblib')
+model_punt = joblib.load(path + 'model_punt.joblib')
+y_play_alt = joblib.load(path + 'y_play_alt.joblib')
+x_pass = joblib.load(path + 'x_pass.joblib')
+x_rush = joblib.load(path + 'x_rush.joblib')
 
 
 # from https://stackoverflow.com/a/62085741

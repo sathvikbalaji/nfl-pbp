@@ -6,6 +6,7 @@ from rq import Queue
 
 pg_url = os.getenv('DATABASE_URL', 'postgresql://localhost:5432/nfl-pbp')
 redis_url = os.getenv('REDISTOGO_URL', 'redis://localhost:6379')
+app_environment = os.getenv('APP_ENVIRONMENT', 'local')
 
 # Flask setup
 app = Flask(__name__)
